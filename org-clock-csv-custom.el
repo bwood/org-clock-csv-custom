@@ -6,8 +6,3 @@
      (interactive)
        (message "I override!")))
 
-(defun bw-test ()
-  "A test function."
-  (interactive)
-    (message "I override!"))
-
