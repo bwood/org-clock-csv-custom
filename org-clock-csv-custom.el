@@ -54,7 +54,10 @@ properties."
                          (org-element-property :hour-end timestamp))
                         (org-clock-csv--pad
                          (org-element-property :minute-end timestamp))))
-	   (duration (org-element-property :duration element)))
+	   (duration (format "%s.%s"
+			     (nth 0 (s-split ":" (org-element-property :duration element)))
+			     (org-clock-csv-custom--fractional-minutes
+			      (org-element-property :duration element)))))
       
       (list :task task
             :parents parents
@@ -65,3 +68,10 @@ properties."
             :effort effort
             :ishabit ishabit
             :tags tags)))))
+
+(defun org-clock-csv-custom--fractional-minutes (str)
+  "Convert minutes to a fraction of 1 hour."
+  (nth 1 (s-split "\\." (format "%0.2f" (/ (float(string-to-number (nth 1 (s-split ":" str)))) 60)))))
+
+
+
