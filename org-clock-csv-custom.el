@@ -36,14 +36,12 @@ properties."
                                           :STYLE task-headline))
                       "t"))
            (category (org-clock-csv--find-category task-headline))
-           (start (format "%d-%s-%s %s:%s"
+           (start (format "%d-%s-%s"
                           (org-element-property :year-start timestamp)
                           (org-clock-csv--pad
                            (org-element-property :month-start timestamp))
                           (org-clock-csv--pad
                            (org-element-property :day-start timestamp))
-                          (org-clock-csv--pad
-                           (org-element-property :hour-start timestamp))
                           (org-clock-csv--pad
                            (org-element-property :minute-start timestamp))))
            (end (format "%d-%s-%s %s:%s"
