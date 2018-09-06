@@ -8,7 +8,7 @@
              (list (plist-get plist ':start)
 	           (org-clock-csv--escape (plist-get plist ':task))
 		   (plist-get plist ':duration)     	           
-		   (org-clock-csv--escape (plist-get plist ':category)))
+		   (org-clock-csv--escape (plist-get plist ':wpsbilling)))
 		   ","))
 
 (eval-after-load "org-clock-csv--parse-element"
@@ -57,7 +57,8 @@ properties."
 	   (duration (format "%s.%s"
 			     (nth 0 (s-split ":" (org-element-property :duration element)))
 			     (org-clock-csv-custom--fractional-hours
-			      (org-element-property :duration element)))))
+			      (org-element-property :duration element))))
+	   (wpsbilling (org-clock-csv-custom--find-wps-property task-headline)))
       
       (list :task task
             :parents parents
@@ -65,6 +66,7 @@ properties."
             :start start
             :end end
 	    :duration duration
+	    :wpsbilling wpsbilling
             :effort effort
             :ishabit ishabit
             :tags tags)))))
@@ -72,6 +74,37 @@ properties."
 (defun org-clock-csv-custom--fractional-hours (str)
   "Convert minutes to a fraction of 1 hour."
   (nth 1 (s-split "\\." (format "%0.2f" (/ (float(string-to-number (nth 1 (s-split ":" str)))) 60)))))
+
+;; Based on org-clock-csv.el: org-clock-csv--find-category
+(defun org-clock-csv-custom--find-wps-property (element)
+  "Find the WPS billing property of a headline ELEMENT, optionally recursing
+upwards until one is found.
+
+Returns an empty string if no WPS billing property is found."
+  (let ((wpsbilling (org-element-property :WPS element))
+        (current element)
+        (curlvl  (org-element-property :level element)))
+    ;; If the headline does not have a wps property, recurse upwards
+    ;; through the parent headlines, checking if there is a category
+    ;; property in any of them.
+    (while (not wpsbilling)
+      (setq current (if (equal curlvl 1)
+                        (org-element-lineage current)
+                      (org-element-lineage current '(headline)))
+            curlvl (- curlvl 1))
+      (setq wpsbilling (org-element-property :WPS current))
+      ;; If we get to the root of the org file with no wps property, just
+      ;; set it to the empty string.
+      ;;
+      ;; TODO: File-level categories are stored not as properties, but
+      ;; as keyword elements in the `org-data' structure. In order to
+      ;; extract them, it will probaby require a call to
+      ;; `org-element-map'. Since this could be an expensive operation
+      ;; on an org file with no headline-level categories, but a
+      ;; single file-level category, it would need to be cached.
+      (unless (equal 'headline (org-element-type current))
+        (setq wpsbilling "")))
+    wpsbilling))
 
 
 
